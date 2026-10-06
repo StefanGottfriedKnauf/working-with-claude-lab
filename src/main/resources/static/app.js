@@ -13,6 +13,8 @@
   var DEFAULT_PRESET_DAYS = 30;
   var LATE_LIMIT = 20;
   var SVG_NS = 'http://www.w3.org/2000/svg';
+  var THEME_KEY = 'theme';
+  var DEFAULT_THEME = 'dark';
 
   // ---------- API client ----------
 
@@ -122,7 +124,8 @@
       chartOnTime: document.getElementById('chart-on-time'),
       chartTickets: document.getElementById('chart-tickets'),
       lateBody: document.getElementById('late-body'),
-      vendors: document.getElementById('vendors-list')
+      vendors: document.getElementById('vendors-list'),
+      themeToggle: document.getElementById('theme-toggle')
     };
 
     var state = {
@@ -138,6 +141,44 @@
       error: null,
       vendorsError: null
     };
+
+    // ---------- Theme ----------
+
+    function storage() {
+      try {
+        return document.defaultView.localStorage;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function storedTheme() {
+      try {
+        var value = storage().getItem(THEME_KEY);
+        return value === 'light' || value === 'dark' ? value : DEFAULT_THEME;
+      } catch (e) {
+        return DEFAULT_THEME;
+      }
+    }
+
+    /** Set data-theme on <html>; the label names the theme the next click gives. */
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      els.themeToggle.textContent = theme === 'dark' ? 'Light theme' : 'Dark theme';
+    }
+
+    function toggleTheme() {
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      try {
+        storage().setItem(THEME_KEY, next);
+      } catch (e) {
+        // Storage can be blocked (private mode); the theme still switches for this visit.
+      }
+    }
+
+    applyTheme(storedTheme());
+    els.themeToggle.addEventListener('click', toggleTheme);
 
     function svgEl(name, attrs, text) {
       var el = document.createElementNS(SVG_NS, name);
