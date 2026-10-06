@@ -2,6 +2,7 @@ package com.marlowefinch.ops;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -95,6 +96,29 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$[0].category").value("Delivery delay"))
                 .andExpect(jsonPath("$[0].open").value(41))
                 .andExpect(jsonPath("$[0].total").value(90));
+    }
+
+    @Test
+    void summaryDefaultsToTheLast30DaysAndNamesTheWorstCarrierAndBusiestCategory() throws Exception {
+        mvc.perform(get("/api/summary"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value("2026-08-22"))
+                .andExpect(jsonPath("$.to").value("2026-09-21"))
+                .andExpect(jsonPath("$.onTimeRate").value(0.937))
+                .andExpect(jsonPath("$.openTickets").value(114))
+                .andExpect(jsonPath("$.revenue").value(360095.5))
+                .andExpect(jsonPath("$.orders").value(624))
+                .andExpect(jsonPath("$.worstCarrier").value("Kessler Logistics"))
+                .andExpect(jsonPath("$.busiestTicketCategory").value("Delivery delay"));
+    }
+
+    @Test
+    void summaryNamesAreNullWhenTheRangeIsEmpty() throws Exception {
+        mvc.perform(get("/api/summary").param("from", "2026-09-21").param("to", "2026-09-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orders").value(0))
+                .andExpect(jsonPath("$.worstCarrier").value(nullValue()))
+                .andExpect(jsonPath("$.busiestTicketCategory").value(nullValue()));
     }
 
     @Test
