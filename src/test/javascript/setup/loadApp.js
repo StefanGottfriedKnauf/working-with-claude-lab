@@ -36,7 +36,8 @@ const REGISTERED_IDS = [
   'chart-tickets',
   'late-table',
   'late-body',
-  'vendors-list'
+  'vendors-list',
+  'theme-toggle'
 ];
 
 const TODAY = '2026-09-21';

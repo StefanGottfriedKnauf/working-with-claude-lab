@@ -122,7 +122,8 @@
       chartOnTime: document.getElementById('chart-on-time'),
       chartTickets: document.getElementById('chart-tickets'),
       lateBody: document.getElementById('late-body'),
-      vendors: document.getElementById('vendors-list')
+      vendors: document.getElementById('vendors-list'),
+      themeToggle: document.getElementById('theme-toggle')
     };
 
     var state = {
@@ -138,6 +139,26 @@
       error: null,
       vendorsError: null
     };
+
+    // ---------- Theme ----------
+
+    var theme = typeof module !== 'undefined' ? require('./theme.js') : root.OpsTheme;
+    var win = document.defaultView;
+
+    /** Set data-theme on <html>; the label names the theme the next click gives. */
+    function showTheme(name) {
+      theme.applyTheme(document, name);
+      els.themeToggle.textContent = name === 'dark' ? 'Light theme' : 'Dark theme';
+    }
+
+    function toggleTheme() {
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      showTheme(next);
+      theme.saveTheme(win, next);
+    }
+
+    showTheme(theme.readTheme(win));
+    els.themeToggle.addEventListener('click', toggleTheme);
 
     function svgEl(name, attrs, text) {
       var el = document.createElementNS(SVG_NS, name);
