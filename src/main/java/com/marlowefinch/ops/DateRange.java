@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * A closed date range for the query endpoints.
  *
- * Both bounds default to "the last 30 days ending today". Validation lives in
+ * A missing `to` defaults to today and a missing `from` to 30 days before `to`. Validation lives in
  * {@link #resolve}, not in the constructor, so repository code can still build any range.
  */
 public record DateRange(LocalDate from, LocalDate to) {
@@ -31,8 +31,13 @@ public record DateRange(LocalDate from, LocalDate to) {
     /** Resolves the range, appending any problems to {@code errors} (result is then null). */
     public static DateRange resolve(String from, String to, Clock clock, List<String> errors) {
         LocalDate today = LocalDate.now(clock);
-        LocalDate start = from == null || from.isBlank() ? today.minusDays(DEFAULT_DAYS) : parse(from, "from", errors);
+        boolean hasFrom = from != null && !from.isBlank();
+        LocalDate start = hasFrom ? parse(from, "from", errors) : null;
         LocalDate end = to == null || to.isBlank() ? today : parse(to, "to", errors);
+        // A missing from is 30 days before the end, so an older `to` alone is still a valid request.
+        if (!hasFrom) {
+            start = (end == null ? today : end).minusDays(DEFAULT_DAYS);
+        }
         if (start == null || end == null) {
             return null;
         }

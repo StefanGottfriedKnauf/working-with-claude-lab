@@ -164,6 +164,17 @@ class DashboardControllerTest {
     }
 
     @Test
+    void anOlderToWithoutFromDefaultsFromToThirtyDaysBeforeTo() throws Exception {
+        for (String url : RANGE_ENDPOINTS) {
+            mvc.perform(get(url).param("to", "2026-01-15"))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(get("/api/kpis").param("to", "2026-01-15"))
+                .andExpect(jsonPath("$.from").value("2025-12-16"))
+                .andExpect(jsonPath("$.to").value("2026-01-15"));
+    }
+
+    @Test
     void sameDayRangeIsAccepted() throws Exception {
         mvc.perform(get("/api/kpis").param("from", "2026-09-01").param("to", "2026-09-01"))
                 .andExpect(status().isOk());
